@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultimate Timer</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --card: rgba(15, 23, 42, 0.7);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 20px 45px rgba(0,0,0,.35);
+    }
+    body.light {
+      --bg1: #dbeafe;
+      --bg2: #f8fafc;
+      --card: rgba(255,255,255,.7);
+      --text: #0f172a;
+      --muted: #475569;
+      --accent: #0284c7;
+      --shadow: 0 20px 45px rgba(2,132,199,.15);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 20%, var(--bg2), var(--bg1) 70%);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      transition: background .4s ease, color .3s ease;
+    }
+    .app {
+      width: min(980px, 100%);
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, .25);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+    .header,.controls,.presets,.extra,.row { display:flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .header { justify-content: space-between; }
+    h1 { font-size: clamp(1.35rem, 1.2rem + 1vw, 2rem); margin: 0; }
+    .pill {
+      border: 1px solid rgba(148,163,184,.35);
+      background: rgba(30,41,59,.35);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: .2s;
+    }
+    body.light .pill { background: rgba(255,255,255,.75); }
+    .pill:hover { transform: translateY(-1px); }
+    .pill.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56,189,248,.25) inset; }
+    .timer {
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      align-items: center;
+    }
+    .face { display:grid; place-items:center; }
+    svg { width: min(72vw, 420px); max-width: 420px; }
+    .time {
+      position: absolute;
+      font-size: clamp(2.2rem, 4.8vw, 4.2rem);
+      font-weight: 700;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+    .ring-wrap { position: relative; display:grid; place-items:center; }
+    .inputs { display:grid; gap: 10px; }
+    .inputs label { font-size: .9rem; color: var(--muted); }
+    .inputs input {
+      width: 100%; padding: 10px 12px; border-radius: 12px;
+      border: 1px solid rgba(148,163,184,.35); background: rgba(15,23,42,.35); color: var(--text);
+    }
+    body.light .inputs input { background: rgba(255,255,255,.8); }
+    .btn { padding: 10px 16px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; }
+    .btn.primary { background: var(--accent); color: #fff; }
+    .btn.success { background: var(--good); color:#fff; }
+    .btn.warn { background: var(--warn); color:#111827; }
+    .btn.danger { background: var(--danger); color:#fff; }
+    .stat { color: var(--muted); font-size: .95rem; }
+    .laps { max-height: 170px; overflow:auto; border-top: 1px solid rgba(148,163,184,.25); padding-top: 10px; }
+    .lap { display:flex; justify-content: space-between; font-size: .95rem; padding: 4px 0; }
+    @media (max-width: 860px){ .timer{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="header">
+      <h1>⏱️ Ultimate Timer</h1>
+      <div class="row">
+        <button class="pill active" data-mode="countdown">Таймер</button>
+        <button class="pill" data-mode="stopwatch">Секундомер</button>
+        <button class="pill" id="themeBtn">🌓 Тема</button>
+      </div>
+    </div>
+
+    <section class="timer">
+      <div class="face">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 220 220" aria-hidden="true">
+            <circle cx="110" cy="110" r="94" fill="none" stroke="rgba(148,163,184,.25)" stroke-width="14"/>
+            <circle id="progress" cx="110" cy="110" r="94" fill="none" stroke="url(#g)" stroke-width="14" stroke-linecap="round" transform="rotate(-90 110 110)"/>
+            <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs>
+          </svg>
+          <div class="time" id="display">25:00</div>
+        </div>
+      </div>
+
+      <aside class="inputs">
+        <div>
+          <label for="minutes">Минуты (таймер)</label>
+          <input id="minutes" type="number" min="0" max="600" value="25" />
+        </div>
+        <div>
+          <label for="seconds">Секунды (таймер)</label>
+          <input id="seconds" type="number" min="0" max="59" value="0" />
+        </div>
+
+        <div class="controls">
+          <button class="btn primary" id="startBtn">Старт</button>
+          <button class="btn warn" id="pauseBtn">Пауза</button>
+          <button class="btn danger" id="resetBtn">Сброс</button>
+          <button class="btn success" id="lapBtn">Круг</button>
+        </div>
+
+        <div class="presets">
+          <button class="pill" data-preset="300">5 мин</button>
+          <button class="pill" data-preset="900">15 мин</button>
+          <button class="pill" data-preset="1500">Pomodoro 25</button>
+          <button class="pill" data-preset="3000">Фокус 50</button>
+        </div>
+
+        <div class="extra">
+          <label><input type="checkbox" id="sound" checked /> Звук окончания</label>
+          <span class="stat" id="status">Режим: Таймер</span>
+        </div>
+
+        <div class="laps" id="laps"></div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const display = document.getElementById('display');
+    const progress = document.getElementById('progress');
+    const minutesInput = document.getElementById('minutes');
+    const secondsInput = document.getElementById('seconds');
+    const lapsEl = document.getElementById('laps');
+    const statusEl = document.getElementById('status');
+    const soundEl = document.getElementById('sound');
+
+    const radius = 94;
+    const circumference = 2 * Math.PI * radius;
+    progress.style.strokeDasharray = `${circumference}`;
+
+    let mode = 'countdown';
+    let running = false;
+    let total = 1500;
+    let remaining = 1500;
+    let elapsed = 0;
+    let timer = null;
+    let laps = [];
+
+    function formatTime(sec){
+      const s = Math.max(0, Math.floor(sec));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const ss = s % 60;
+      return h > 0
+        ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`
+        : `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+    }
+
+    function render(){
+      const current = mode === 'countdown' ? remaining : elapsed;
+      display.textContent = formatTime(current);
+      const ratio = mode === 'countdown'
+        ? (total ? remaining / total : 0)
+        : Math.min(1, (elapsed % 60) / 60);
+      progress.style.strokeDashoffset = `${circumference * (1 - ratio)}`;
+      statusEl.textContent = `Режим: ${mode === 'countdown' ? 'Таймер' : 'Секундомер'}${running ? ' • работает' : ''}`;
+    }
+
+    function beep(){
+      if (!soundEl.checked) return;
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.25);
+    }
+
+    function tick(){
+      if (mode === 'countdown') {
+        remaining -= 1;
+        if (remaining <= 0) {
+          remaining = 0;
+          stop();
+          beep();
+        }
+      } else {
+        elapsed += 1;
+      }
+      render();
+    }
+
+    function start(){
+      if (running) return;
+      if (mode === 'countdown' && remaining <= 0) reset();
+      running = true;
+      timer = setInterval(tick, 1000);
+      render();
+    }
+    function pause(){ if (!running) return; stop(); render(); }
+    function stop(){ running = false; clearInterval(timer); timer = null; }
+    function reset(){
+      stop();
+      if (mode === 'countdown') {
+        const m = Number(minutesInput.value) || 0;
+        const s = Number(secondsInput.value) || 0;
+        total = Math.max(1, m * 60 + s);
+        remaining = total;
+      } else {
+        elapsed = 0;
+      }
+      laps = [];
+      lapsEl.innerHTML = '';
+      render();
+    }
+
+    function addLap(){
+      const t = mode === 'countdown' ? remaining : elapsed;
+      laps.unshift(t);
+      lapsEl.innerHTML = laps.map((sec,i)=>`<div class="lap"><span>Круг ${laps.length - i}</span><strong>${formatTime(sec)}</strong></div>`).join('');
+    }
+
+    document.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        mode = btn.dataset.mode;
+        if (mode === 'countdown') {
+          elapsed = 0;
+          reset();
+        } else {
+          stop(); remaining = total; elapsed = 0; laps = []; lapsEl.innerHTML = '';
+          render();
+        }
+      });
+    });
+
+    document.querySelectorAll('[data-preset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sec = Number(btn.dataset.preset);
+        total = sec;
+        remaining = sec;
+        minutesInput.value = Math.floor(sec / 60);
+        secondsInput.value = sec % 60;
+        mode = 'countdown';
+        document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active', b.dataset.mode==='countdown'));
+        reset();
+      });
+    });
+
+    document.getElementById('themeBtn').addEventListener('click', () => document.body.classList.toggle('light'));
+    document.getElementById('startBtn').addEventListener('click', start);
+    document.getElementById('pauseBtn').addEventListener('click', pause);
+    document.getElementById('resetBtn').addEventListener('click', reset);
+    document.getElementById('lapBtn').addEventListener('click', addLap);
+    minutesInput.addEventListener('change', reset);
+    secondsInput.addEventListener('change', reset);
+
+    reset();
+  </script>
+</body>
+</html>
