@@ -115,3 +115,36 @@ kbd { border: 1px solid rgba(148,163,184,.35); border-bottom-width: 2px; border-
 }
 .preset-chip { display: inline-flex; align-items: center; }
 .preset-chip .pill { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+select {
+  width: 100%; padding: 10px 12px; border-radius: 12px;
+  border: 1px solid rgba(148,163,184,.35); background: rgba(15,23,42,.35); color: var(--text);
+}
+body.light select { background: rgba(255,255,255,.8); }
+.settings-card {
+  border: 1px solid rgba(148,163,184,.24);
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: rgba(15,23,42,.18);
+}
+.settings-card summary { cursor: pointer; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+.inputs.compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.check-row { display: flex !important; align-items: center; gap: 8px; color: var(--text) !important; margin: 0 !important; }
+.cycle-progress { color: var(--muted); font-size: .95rem; min-height: 1.2em; }
+.stats { border: 1px solid rgba(148,163,184,.22); border-radius: 14px; padding: 10px 12px; color: var(--muted); }
+.history-toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.update-toast { position: fixed; right: 18px; bottom: 18px; display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 16px; color: var(--text); background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.35); box-shadow: var(--shadow); }
+.focus-toggle { justify-self: center; }
+body[data-phase="work"] #progress { stroke: #22c55e; }
+body[data-phase="rest"], body[data-phase="short"], body[data-phase="long"] { --accent: #a78bfa; }
+body[data-phase="warmup"] #progress { stroke: #f59e0b; }
+body[data-phase="cooldown"] #progress { stroke: #38bdf8; }
+body.focus-mode .panel, body.focus-mode .header { display: none; }
+body.focus-mode .app { width: min(760px, 100%); }
+body.focus-mode .timer { grid-template-columns: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+@media (max-width: 560px){
+  .inputs.compact { grid-template-columns: 1fr; }
+  .update-toast { left: 12px; right: 12px; bottom: 12px; }
+}
