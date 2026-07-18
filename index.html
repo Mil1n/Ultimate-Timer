@@ -17,16 +17,17 @@
         <h1 id="app-title">⏱️ Ultimate Timer</h1>
       </div>
       <div class="row mode-tabs" role="tablist" aria-label="Режим таймера">
-        <button class="pill active" data-mode="countdown" role="tab" aria-selected="true">Таймер</button>
-        <button class="pill" data-mode="stopwatch" role="tab" aria-selected="false">Секундомер</button>
-        <button class="pill" data-mode="pomodoro" role="tab" aria-selected="false">Pomodoro</button>
-        <button class="pill" data-mode="interval" role="tab" aria-selected="false">Интервалы</button>
-        <button class="pill" id="themeBtn" type="button">🌓 Тема</button>
+        <button class="pill active" data-mode="countdown" role="tab" aria-selected="true" aria-controls="timerPanel">Таймер</button>
+        <button class="pill" data-mode="stopwatch" role="tab" aria-selected="false" aria-controls="timerPanel">Секундомер</button>
+        <button class="pill" data-mode="pomodoro" role="tab" aria-selected="false" aria-controls="timerPanel">Pomodoro</button>
+        <button class="pill" data-mode="interval" role="tab" aria-selected="false" aria-controls="timerPanel">Интервалы</button>
+        <button class="pill" id="themeBtn" type="button" aria-pressed="false">🌓 Тема</button>
       </div>
     </div>
 
-    <section class="timer">
+    <section class="timer" id="timerPanel">
       <div class="face">
+        <button class="pill focus-toggle" id="focusBtn" type="button">⛶ Фокус-режим</button>
         <div class="ring-wrap" aria-label="Прогресс">
           <svg viewBox="0 0 220 220" aria-hidden="true">
             <circle cx="110" cy="110" r="94" fill="none" stroke="rgba(148,163,184,.25)" stroke-width="14"/>
@@ -36,6 +37,7 @@
           <div class="time" id="display" role="timer" aria-live="polite">25:00</div>
         </div>
         <div class="phase-card" id="phaseCard">Готов к запуску</div>
+        <div class="cycle-progress" id="cycleProgress" aria-live="polite"></div>
       </div>
 
       <aside class="panel" aria-label="Настройки и управление">
@@ -50,19 +52,23 @@
           </div>
         </div>
 
+        <details class="settings-card mode-panel" data-panel="pomodoro">
+          <summary>Настройки Pomodoro</summary>
+          <div class="inputs compact">
+            <div><label for="shortBreakMinutes">Короткий перерыв, мин</label><input id="shortBreakMinutes" type="number" min="1" max="120" value="5" inputmode="numeric" /></div>
+            <div><label for="longBreakMinutes">Длинный перерыв, мин</label><input id="longBreakMinutes" type="number" min="1" max="240" value="15" inputmode="numeric" /></div>
+            <div><label for="sessionsBeforeLongBreak">Фокусов до длинного</label><input id="sessionsBeforeLongBreak" type="number" min="1" max="12" value="4" inputmode="numeric" /></div>
+            <label class="check-row"><input type="checkbox" id="autoStartPomodoro" /> Автостарт следующей фазы</label>
+          </div>
+        </details>
+
         <div class="inputs mode-panel hidden" data-panel="interval">
-          <div>
-            <label for="workSeconds">Работа, сек</label>
-            <input id="workSeconds" type="number" min="1" max="3600" value="40" inputmode="numeric" />
-          </div>
-          <div>
-            <label for="restSeconds">Отдых, сек</label>
-            <input id="restSeconds" type="number" min="0" max="3600" value="20" inputmode="numeric" />
-          </div>
-          <div>
-            <label for="rounds">Раунды</label>
-            <input id="rounds" type="number" min="1" max="99" value="8" inputmode="numeric" />
-          </div>
+          <div><label for="warmupSeconds">Разминка, сек</label><input id="warmupSeconds" type="number" min="0" max="3600" value="0" inputmode="numeric" /></div>
+          <div><label for="workSeconds">Работа, сек</label><input id="workSeconds" type="number" min="1" max="3600" value="40" inputmode="numeric" /></div>
+          <div><label for="restSeconds">Отдых, сек</label><input id="restSeconds" type="number" min="0" max="3600" value="20" inputmode="numeric" /></div>
+          <div><label for="cooldownSeconds">Заминка, сек</label><input id="cooldownSeconds" type="number" min="0" max="3600" value="0" inputmode="numeric" /></div>
+          <div><label for="rounds">Раунды</label><input id="rounds" type="number" min="1" max="99" value="8" inputmode="numeric" /></div>
+          <label class="check-row"><input type="checkbox" id="autoStartInterval" checked /> Автопродолжение фаз</label>
         </div>
 
         <div class="controls">
@@ -83,30 +89,52 @@
           <label for="presetName">Свой пресет</label>
           <div class="row no-wrap">
             <input id="presetName" type="text" placeholder="Название" maxlength="20" />
-            <input id="presetMinutes" type="number" min="1" max="600" placeholder="Мин" inputmode="numeric" />
+            <input id="presetMinutes" type="number" min="0" max="600" placeholder="Мин" inputmode="numeric" />
+            <input id="presetSeconds" type="number" min="0" max="59" placeholder="Сек" inputmode="numeric" />
             <button class="btn secondary" type="submit">Добавить</button>
           </div>
         </form>
         <div class="presets custom-list" id="customPresets" aria-label="Пользовательские пресеты"></div>
 
-        <div class="extra">
-          <label><input type="checkbox" id="sound" checked /> Звук</label>
-          <label for="volume">Громкость</label>
-          <input id="volume" type="range" min="0" max="1" step="0.05" value="0.25" />
-          <button class="pill" id="notifyBtn" type="button">🔔 Уведомления</button>
-        </div>
+        <details class="settings-card" open>
+          <summary>Звук и поведение</summary>
+          <div class="extra">
+            <label><input type="checkbox" id="sound" checked /> Звук</label>
+            <label for="soundType">Сигнал</label>
+            <select id="soundType"><option value="classic">Классика</option><option value="soft">Мягкий</option><option value="alert">Будильник</option></select>
+            <label><input type="checkbox" id="voice" /> Голосовые подсказки</label>
+            <label><input type="checkbox" id="wakeLock" /> Не гасить экран</label>
+            <label for="volume">Громкость</label>
+            <input id="volume" type="range" min="0" max="1" step="0.05" value="0.25" />
+            <button class="pill" id="testSoundBtn" type="button">▶ Проверить</button>
+            <button class="pill" id="notifyBtn" type="button">🔔 Уведомления</button>
+          </div>
+        </details>
 
         <div class="shortcuts" aria-label="Горячие клавиши">
-          <kbd>Space</kbd> старт/пауза · <kbd>R</kbd> сброс · <kbd>L</kbd> круг · <kbd>T</kbd> тема · <kbd>1–4</kbd> пресеты
+          <kbd>Space</kbd> старт/пауза · <kbd>R</kbd> сброс · <kbd>L</kbd> круг · <kbd>T</kbd> тема · <kbd>F</kbd> фокус · <kbd>1–4</kbd> пресеты
         </div>
 
         <span class="stat" id="status" aria-live="polite">Режим: Таймер</span>
         <div class="laps" id="laps" aria-label="История кругов"></div>
+        <div class="stats" id="stats" aria-label="Статистика"></div>
+        <div class="history-toolbar">
+          <button class="pill" id="exportBtn" type="button">Экспорт данных</button>
+          <button class="pill" id="importBtn" type="button">Импорт данных</button>
+          <input class="visually-hidden" id="importFile" type="file" accept="application/json" />
+          <button class="pill" id="clearHistoryBtn" type="button">Очистить историю</button>
+          <button class="pill danger-outline" id="resetAllBtn" type="button">Сбросить всё</button>
+        </div>
         <div class="history" id="history" aria-label="История сессий"></div>
       </aside>
     </section>
   </main>
 
-  <script src="script.js" defer></script>
+  <div class="update-toast hidden" id="updateToast" role="status">
+    Доступна новая версия.
+    <button class="pill" id="reloadBtn" type="button">Обновить</button>
+  </div>
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>
