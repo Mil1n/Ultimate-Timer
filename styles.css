@@ -148,3 +148,17 @@ body.focus-mode .timer { grid-template-columns: 1fr; }
   .inputs.compact { grid-template-columns: 1fr; }
   .update-toast { left: 12px; right: 12px; bottom: 12px; }
 }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.danger-outline { border-color: rgba(239,68,68,.55); color: #fecaca; }
+.preset-actions { display: inline-flex; gap: 4px; margin-left: 6px; }
+.preset-actions button { border: 0; border-radius: 50%; cursor: pointer; background: rgba(148,163,184,.18); color: var(--text); width: 24px; height: 24px; }

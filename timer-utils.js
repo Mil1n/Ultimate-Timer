@@ -28,3 +28,41 @@ export function getNextPomodoroState(current, config) {
     total: config.focusSeconds
   };
 }
+
+export function getModeFromHash(hash, fallback = 'countdown') {
+  const mode = String(hash || '').replace('#', '');
+  return ['countdown', 'stopwatch', 'pomodoro', 'interval'].includes(mode) ? mode : fallback;
+}
+
+export function buildStats(history, now = new Date()) {
+  const today = now.toISOString().slice(0, 10);
+  const weekAgo = new Date(now);
+  weekAgo.setDate(now.getDate() - 6);
+  const weekStart = weekAgo.toISOString().slice(0, 10);
+
+  const totals = history.reduce((acc, item) => {
+    const duration = item.duration || 0;
+    acc.allSessions += 1;
+    acc.byMode[item.mode] = (acc.byMode[item.mode] || 0) + duration;
+    if (item.day === today) {
+      acc.todaySessions += 1;
+      acc.todayFocus += ['pomodoro', 'countdown'].includes(item.mode) ? duration : 0;
+      acc.todayTraining += item.mode === 'interval' ? duration : 0;
+    }
+    if (item.day >= weekStart && item.day <= today) {
+      acc.weekSessions += 1;
+      acc.weekFocus += ['pomodoro', 'countdown'].includes(item.mode) ? duration : 0;
+    }
+    return acc;
+  }, {
+    allSessions: 0,
+    todaySessions: 0,
+    todayFocus: 0,
+    todayTraining: 0,
+    weekSessions: 0,
+    weekFocus: 0,
+    byMode: {}
+  });
+
+  return totals;
+}

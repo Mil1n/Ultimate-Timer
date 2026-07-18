@@ -119,8 +119,11 @@
         <div class="laps" id="laps" aria-label="История кругов"></div>
         <div class="stats" id="stats" aria-label="Статистика"></div>
         <div class="history-toolbar">
-          <button class="pill" id="exportBtn" type="button">Экспорт JSON</button>
+          <button class="pill" id="exportBtn" type="button">Экспорт данных</button>
+          <button class="pill" id="importBtn" type="button">Импорт данных</button>
+          <input class="visually-hidden" id="importFile" type="file" accept="application/json" />
           <button class="pill" id="clearHistoryBtn" type="button">Очистить историю</button>
+          <button class="pill danger-outline" id="resetAllBtn" type="button">Сбросить всё</button>
         </div>
         <div class="history" id="history" aria-label="История сессий"></div>
       </aside>

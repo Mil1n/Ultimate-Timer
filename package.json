@@ -1,10 +1,10 @@
 {
   "name": "ultimate-timer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node tests/timer-utils.test.js",
-    "lint": "node --check script.js && node --check tests/timer-utils.test.js"
+    "lint": "node --check script.js && node --check audio.js && node --check pwa.js && node --check storage.js && node --check sw.js && node --check tests/timer-utils.test.js"
   }
 }
