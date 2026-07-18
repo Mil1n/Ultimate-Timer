@@ -266,7 +266,6 @@ function updateClock(now) {
   render();
   if (running) rafId = requestAnimationFrame(updateClock);
 }
-
 function finishCountdownLikeMode() {
   remaining = 0;
   running = false;
@@ -290,7 +289,7 @@ function advancePomodoro() {
   total = next.total;
   remaining = total;
 }
-
+function advancePomodoro() { const next = getNextPomodoroState(pomodoroState, pomodoroConfig()); pomodoroState = { phase: next.phase, session: next.session }; total = next.total; remaining = total; }
 function advanceInterval() {
   playBeep(1);
   const rounds = clampNumber(roundsInput.value, 1, 99);
@@ -320,7 +319,6 @@ function advanceInterval() {
   persistRuntime({ force: true });
   if (!autoStartIntervalEl.checked) pause();
 }
-
 function reset() {
   if (running) pause();
   if (mode === 'stopwatch') elapsed = 0;
